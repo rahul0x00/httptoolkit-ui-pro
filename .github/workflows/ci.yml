@@ -25,7 +25,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
-      NODE_ENV: production
+      NODE_ENV: development
       CSC_IDENTITY_AUTO_DISCOVERY: "false"
 
     steps:
