@@ -1,4 +1,4 @@
-name: Build & Release
+name: Build
 
 on:
   workflow_dispatch:
@@ -25,8 +25,8 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
+      NODE_ENV: production
       CSC_IDENTITY_AUTO_DISCOVERY: "false"
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Checkout
@@ -35,8 +35,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: "22"
           cache: npm
+
+      - name: Show versions
+        run: |
+          node -v
+          npm -v
 
       - name: Install dependencies
         run: npm ci
@@ -44,22 +49,22 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Package
-        run: npm run dist
+      - name: Verify output
+        shell: bash
+        run: |
+          echo "Contents of dist:"
+          ls -R dist || true
 
-      - name: Upload artifacts
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ runner.os }}
-          path: |
-            dist/**
-            release/**
-          if-no-files-found: ignore
+          name: httptoolkit-ui-pro-${{ matrix.os }}
+          path: dist/
+          if-no-files-found: error
 
-      - name: Publish Release
+      - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: |
             dist/**
-            release/**
